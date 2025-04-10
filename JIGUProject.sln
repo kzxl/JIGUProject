@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JIGUProject", "JIGUProject\JIGUProject.csproj", "{E679338D-F8BC-477E-88AE-017BB10E3754}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JIGUProject_ServerView", "JIGUProject\JIGUProject_ServerView.csproj", "{E679338D-F8BC-477E-88AE-017BB10E3754}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPI", "WebAPI\WebAPI.csproj", "{EED54B1F-826C-468F-9324-F3C91EE65168}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JIGUProject_ClientView", "JIGUProject_ClientView\JIGUProject_ClientView.csproj", "{19BF9E09-1265-46ED-88C7-CAD244E9DD45}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{E679338D-F8BC-477E-88AE-017BB10E3754}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E679338D-F8BC-477E-88AE-017BB10E3754}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E679338D-F8BC-477E-88AE-017BB10E3754}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EED54B1F-826C-468F-9324-F3C91EE65168}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EED54B1F-826C-468F-9324-F3C91EE65168}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EED54B1F-826C-468F-9324-F3C91EE65168}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EED54B1F-826C-468F-9324-F3C91EE65168}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19BF9E09-1265-46ED-88C7-CAD244E9DD45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19BF9E09-1265-46ED-88C7-CAD244E9DD45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19BF9E09-1265-46ED-88C7-CAD244E9DD45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19BF9E09-1265-46ED-88C7-CAD244E9DD45}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
