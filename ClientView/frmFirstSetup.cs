@@ -9,14 +9,18 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Xml;
+using Shared.Services.Extension;
+using Shared.Services.ClientService;
 
 namespace ClientView
 {
     public partial class frmFirstSetup : Form
     {
+        private readonly IClientService _service;
         public frmFirstSetup()
         {
             InitializeComponent();
+            _service = new ClientService(new HttpClient());
         }
         void createXMLSettings(string LINE, string IPServer, string Folder)
         {
@@ -64,9 +68,9 @@ namespace ClientView
             {
                 frmClient frm = new frmClient();
                 this.Hide();
-                frm.Closed += (s, args) => this.Close();
-                this.Close();
+                frm.Closed += (s, args) => this.Close();                
                 frm.ShowDialog();
+                this.Close();
             }
 
         }
@@ -93,6 +97,7 @@ namespace ClientView
             {
                 createXMLSettings(txtLine.Text, txtAPIUrl.Text, txtFolder.Text);
                 frmClient frm = new frmClient();
+                this.Hide();
                 frm.ShowDialog();
                 this.Close();
             }
@@ -106,9 +111,13 @@ namespace ClientView
             }
         }
 
-        private void btCheckAPI_Click(object sender, EventArgs e)
+        private async void btCheckAPI_Click(object sender, EventArgs e)
         {
-
+            var result = await _service.CheckAPI(txtAPIUrl.Text);
+            if (result == "Success")
+                MessageBox.Show("Connect to server");
+            else
+                MessageBox.Show("Connect failed");
         }
     }
 }

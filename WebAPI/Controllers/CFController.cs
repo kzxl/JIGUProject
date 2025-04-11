@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using ModelDTO;
+using Shared.Models;
 using Shared.Services.ServerService;
 
 namespace WebAPI.Controllers
@@ -20,7 +22,11 @@ namespace WebAPI.Controllers
             => Ok(await _service.GetData());
         [HttpPost]
         [Route("api/delete")]
-        public IActionResult DeleteCF([FromBody] int id)
-            => Ok(_service.DeleteCF(id));
+        public async Task<IActionResult> DeleteCF([FromBody] Request request)
+            => Ok( await _service.DeleteCF(request.Id));
+        [HttpGet]
+        [Route("api/check")]
+        public IActionResult Check()
+            => Ok("Success");
     }
 }

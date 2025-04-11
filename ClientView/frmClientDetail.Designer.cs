@@ -60,7 +60,7 @@
             label1.AutoSize = true;
             label1.Location = new Point(47, 15);
             label1.Name = "label1";
-            label1.Size = new Size(42, 15);
+            label1.Size = new Size(43, 15);
             label1.TabIndex = 1;
             label1.Text = "Tên CF";
             // 
@@ -140,7 +140,7 @@
             label6.AutoSize = true;
             label6.Location = new Point(3, 160);
             label6.Name = "label6";
-            label6.Size = new Size(86, 15);
+            label6.Size = new Size(87, 15);
             label6.TabIndex = 1;
             label6.Text = "Tên  Nhân Viên";
             // 
@@ -196,6 +196,7 @@
             Controls.Add(txtCF);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Name = "frmClientDetail";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "QL XUẤT KHO -KTSX TRÀ VINH";
             FormClosing += frmClientDetail_FormClosing;
             FormClosed += frmClientDetail_FormClosed;

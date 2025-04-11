@@ -14,6 +14,6 @@ namespace Shared.Services.ServerService
         ResponseDTO SetCF(RequestDTO request);
 
         Task<List<LineInfo>> GetData();
-        ResponseDTO DeleteCF(int id);
+        Task<ResponseDTO> DeleteCF(int id);
     }
 }

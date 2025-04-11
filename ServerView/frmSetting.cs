@@ -44,13 +44,17 @@ namespace ServerView
             {
                 b |= false;
             }
+            if (string.IsNullOrEmpty(txtAPI.Text))
+            {
+                b = false;
+            }
             if (b)
             {
-                createXMLSettings(txtCF.Text, txtLogs.Text);
+                createXMLSettings(txtCF.Text,txtAPI.Text, txtLogs.Text);
             }
         }
 
-        void createXMLSettings(string CFPath, string LogPath)
+        void createXMLSettings(string CFPath, string API, string LogPath)
         {
             try
             {
@@ -62,6 +66,7 @@ namespace ServerView
                     writer.WriteStartDocument();
                     writer.WriteStartElement("GeneralInfo");
                     writer.WriteElementString("CFPath", CFPath);
+                    writer.WriteElementString("APIUrl", API);
                     writer.WriteElementString("LogPath", LogPath);
                     writer.WriteEndElement();
                     writer.WriteEndDocument();
@@ -77,6 +82,7 @@ namespace ServerView
                     foreach (XmlElement element in nodes)
                     {
                         element.SelectSingleNode("CFPath").InnerText = CFPath;
+                        element.SelectSingleNode("APIUrl").InnerText = API;
                         element.SelectSingleNode("LogPath").InnerText = LogPath;
                         xml.Save(xmlFile);
                     }
@@ -96,6 +102,7 @@ namespace ServerView
                 DataSet dsXML = new DataSet();
                 dsXML.ReadXml(xmlFile, XmlReadMode.InferSchema);
                 txtCF.Text = dsXML.Tables["GeneralInfo"].Rows[0]["CFPath"].ToString();
+                txtAPI.Text = dsXML.Tables["GeneralInfo"].Rows[0]["APIUrl"].ToString();
                 txtLogs.Text = dsXML.Tables["GeneralInfo"].Rows[0]["LogPath"].ToString();
             }
 
@@ -106,9 +113,5 @@ namespace ServerView
             this.DialogResult = DialogResult.OK;
         }
 
-        private void txtCF_TextChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }

@@ -13,185 +13,117 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ClosedXML.Excel;
+using Shared.Services.ClientService;
+using Shared.Services.Extension;
+using Newtonsoft.Json;
+using ModelDTO;
+using Shared.Models;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 
 namespace ServerView
 {
     public partial class frmMain : Form
     {
+        private readonly IClientService _service;
+        private BindingSource _bs = new BindingSource();
+        string[] allowedColumns = new[] { "Line", "Date" };
         public frmMain()
         {
             InitializeComponent();
+            
+            _service = new ClientService(new HttpClient());
         }
-        private void frmServer_Load(object sender, EventArgs e)
-        {
+
+        public static XLWorkbook workbook, workbookLogs;
+        string CFPath, LogPath, Location1, Location2, APIUrl;
+        System.Media.SoundPlayer player = new System.Media.SoundPlayer(@"notification.wav");
+        private async void frmServer_Load(object sender, EventArgs e)
+        {            
+            gv.DataSource = _bs;
             if (File.Exists("SSettings.xml"))
             {
-
                 string xmlFile = "SSettings.xml";
                 DataSet dsXML = new DataSet();
                 dsXML.ReadXml(xmlFile, XmlReadMode.InferSchema);
+
                 CFPath = dsXML.Tables["GeneralInfo"].Rows[0]["CFPath"].ToString();
+
+                APIUrl = dsXML.Tables["GeneralInfo"].Rows[0]["APIUrl"].ToString();
 
                 workbook = new XLWorkbook(CFPath);
 
                 LogPath = dsXML.Tables["GeneralInfo"].Rows[0]["LogPath"].ToString();
             }
-            if (File.Exists("mydb.db"))
-                sqlite_conn = clsFunctions.CreateConnection();
-            else
-            {
-                sqlite_conn = clsFunctions.CreateConnection();
-                clsFunctions.CreateTable(sqlite_conn);
-            }
 
-            refreshData();
             Clear();
             if (!File.Exists("SSettings.xml"))
                 lbLocation.Text = "Chưa chọn file chứa CF, vui lòng chọn ở Setting";
             else
                 lbLocation.Text = "";
-            btChecked.Enabled = false;
-
-            if (clsFunctions.GetIPv4() != null)
-            {
-                foreach (string temp in clsFunctions.GetIPv4())
-                {
-                    lbIP.Text += " " + temp + " ";
-                }
-            }
-            else { lbIP.Text += ""; }
-
-            lbComputerName.Text += " " + clsFunctions.GetComputerName();
-
-
-            th_StartListen = new Thread(new ThreadStart(StartListen));
-            th_StartListen.Start();
-
-
+            btConfirm.Enabled = false;
         }
-        private void StartListen()
+        private List<int> _oldIds = new List<int>();
+        private bool isLoading = false;
+        async Task refreshData()
         {
-            //Creating a TCP Connection and listening to the port
-            tcpListener = new TcpListener(System.Net.IPAddress.Any, 6666);
-            tcpListener.Start();
-            lbStatus.Text = "Listening on port 6666 ...";
-            int counter = 0;
-            appStatus = 0;
+            if (isLoading) return;
+            if (string.IsNullOrWhiteSpace(APIUrl)) return;
 
-            while (appStatus != 2)
-            {
-                try
-                {
-                    client = tcpListener.AcceptTcpClient();
-                    counter++;
-                    clientList.Add(client);
-                    IPEndPoint ipend = (IPEndPoint)client.Client.RemoteEndPoint;
-                    //Updating status of connection
-                    lbStatus.Text = "Connected from " + IPAddress.Parse(ipend.Address.ToString());
+            var _newData = await _service.GetLineInfo(APIUrl);
 
-                    //lstUser.Items.Add(ipend.Address.ToString() + " " + counter);
-
-                    appStatus = 1;
-                    th_handleClient = new Thread(delegate () { handleClient(client, counter); });
-                    th_handleClient.Start();
-
-                }
-                catch (Exception err)
-                {
-
-                }
-            }
-        }
-
-        private void handleClient(object client, int i)
-        {
+            var newIds = _newData.Select(x => x.Id).ToList();
+            bool isDifferent = !_oldIds.SequenceEqual(newIds);
+            bool isDifferentForPlayNotification = newIds.Except(_oldIds).Any();
             try
             {
-                TcpClient streamData = (TcpClient)client;
-                byte[] data = new byte[4096];
-                byte[] sendData = new byte[4096];
-                int byteRead;
-                string strdata;
-                ASCIIEncoding encode = new ASCIIEncoding();
-                Thread.Sleep(1000);
-                NetworkStream networkstream = streamData.GetStream();
-
-                StreamWriter writer = new StreamWriter(networkstream);
-                StreamReader reader = new StreamReader(networkstream);
-                //Send Command 1
-                sendData = encode.GetBytes("1");
-                //networkstream.Write(sendData, 0, sendData.Length);
-                writer.WriteLine(sendData);
-                //networkstream.Flush();
-                //Listen...
-                while (true)
+                if (isDifferent)
                 {
-
-                    //byteRead = 8;
-                    //byteRead = networkstream.Read(data, 0, 4096);
-
-                    if (networkstream.DataAvailable == true)
+                    object selectedId = null;
+                    if (gv.CurrentRow != null)
                     {
+                        selectedId = gv.CurrentRow.Cells["Id"].Value;
+                    }
 
+                    gv.SuspendLayout();
+                    isLoading = true;
+                    _bs.DataSource = _newData;
+                    gv.ResumeLayout();
+                    
+                    _oldIds = newIds; 
 
-                        //MessageBox.Show(byteRead.ToString());
-                        //strdata = Encoding.ASCII.GetString(data, 0, byteRead);
-                        strdata = reader.ReadLine();
-                        //Get user info
-                        if (strdata.StartsWith("MESS"))
+                    if (selectedId != null)
+                    {
+                        foreach (DataGridViewRow row in gv.Rows)
                         {
-
-                            lbLine.Text = strdata.Split('/')[1];
-                            lbCF.Text = strdata.Split('/')[2];
-                            lbCode.Text = strdata.Split('/')[3];
-                            lbQuantity.Text = strdata.Split('/')[4];
-                            clsFunctions.InsertData(sqlite_conn, strdata.Split('/')[1], strdata.Split('/')[2], strdata.Split('/')[3], strdata.Split('/')[4]);
-                            player.Play();
-                            //refreshData();
-                            // break;
-                            timer1.Enabled = true;
-                            Thread.Sleep(2000);
-                            timer1.Enabled = false;
-                        }
-                        if (strdata.StartsWith("END"))
-                        {
-
+                            if (row.Cells["Id"].Value?.Equals(selectedId) == true)
+                            {
+                                row.Selected = true;
+                                gv.CurrentCell = row.Cells[0];
+                                break;
+                            }
                         }
                     }
+                    if (isDifferentForPlayNotification)
+                    {
+                        player.Play();
+                    }
                 }
-
             }
-            catch (Exception)
-            {
-
+            finally
+            {                
+                isLoading = false;
             }
+        }
 
-        }
-        void refreshData()
-        {
-            dt = clsFunctions.ExecuteReadQuery("Select * from LineInfo order by DATE DESC", sqlite_conn);
-            dgv.AutoGenerateColumns = false;
-            dgv.DataSource = dt;
-        }
-        void getDataByID(int id)
-        {
-            try
-            {
-
-            }
-            catch { }
-        }
         private void frmServer_FormClosed(object sender, FormClosedEventArgs e)
         {
             Environment.Exit(Environment.ExitCode);
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            refreshData();
-        }
 
-        private void dgv_CellClick(object sender, DataGridViewCellEventArgs e)
+
+        private void gv_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             try
             {
@@ -199,14 +131,14 @@ namespace ServerView
                 ckLocation1.Enabled = false;
                 ckLocation2.Text = "Không tìm thấy vị trí";
                 ckLocation2.Enabled = false;
-                btChecked.Enabled = true;
+                btConfirm.Enabled = true;
                 Clear();
 
-                idLine = dgv.Rows[e.RowIndex].Cells["Id"].Value._Int();
-                lbLine.Text = dgv.Rows[e.RowIndex].Cells["LINE"].Value.ToString();
-                lbCF.Text = dgv.Rows[e.RowIndex].Cells["CF"].Value.ToString();
-                lbCode.Text = dgv.Rows[e.RowIndex].Cells["CODE"].Value.ToString();
-                lbQuantity.Text = dgv.Rows[e.RowIndex].Cells["Quantity"].Value.ToString();
+
+                lbLine.Text = gv.Rows[e.RowIndex].Cells["LINE"].Value.ToString();
+                lbCF.Text = gv.Rows[e.RowIndex].Cells["CF"].Value.ToString();
+                lbCode.Text = gv.Rows[e.RowIndex].Cells["CODE"].Value.ToString();
+                lbQuantity.Text = gv.Rows[e.RowIndex].Cells["Quantity"].Value.ToString();
 
                 string code = lbCode.Text.Trim();
                 var locationParts = (CheckCFLocation(code) ?? "").Split('/');
@@ -222,13 +154,13 @@ namespace ServerView
 
                 // UI - Vị trí 1
                 ckLocation1.Text = string.IsNullOrEmpty(Location1) ? "Vị trí cũ: (Không có)" : $"Vị trí cũ: {Location1}";
-                lblQuantity1.Text = $"Hiện có {qty1}";
+                lbQuantity1.Text = $"Hiện có {qty1}";
                 ckLocation1.Enabled = !string.IsNullOrEmpty(Location1);
                 ckLocation1.Checked = !string.IsNullOrEmpty(Location1);
 
                 // UI - Vị trí 2
                 ckLocation2.Text = string.IsNullOrEmpty(Location2) ? "Vị trí mới: (Không có)" : $"Vị trí mới: {Location2}";
-                lblQuantity2.Text = $"Hiện có {qty2}";
+                lbQuantity2.Text = $"Hiện có {qty2}";
                 ckLocation2.Enabled = !string.IsNullOrEmpty(Location2);
                 ckLocation2.Checked = !string.IsNullOrEmpty(Location2);
             }
@@ -266,7 +198,7 @@ namespace ServerView
             ckLocation1.Enabled = false;
             ckLocation2.Text = "Không tìm thấy vị trí";
             ckLocation2.Enabled = false;
-            btChecked.Enabled = true;
+            btConfirm.Enabled = true;
 
             lbLine.Text = "";
             lbCF.Text = "";
@@ -274,10 +206,16 @@ namespace ServerView
             lbQuantity.Text = "";
             lbLocation.Text = "";
         }
-        private void btChecked_Click(object sender, EventArgs e)
+        private async void btConfirm_Click(object sender, EventArgs e)
         {
             try
             {
+                var idLine = gv.CurrentRow.Cells["id"].Value._IntOrNull();
+                if (idLine == null)
+                {
+                    MessageBox.Show("Incorrect Id selected");
+                    return;
+                }
                 if (ckLocation1.CheckState != CheckState.Checked && ckLocation2.CheckState != CheckState.Checked)
                 {
                     MessageBox.Show("Cần chọn vị trí để lưu");
@@ -291,9 +229,16 @@ namespace ServerView
                 else
                 { }
                 SaveLogs(lbLine.Text, lbCF.Text, lbCode.Text, lbQuantity.Text, Location1, Location2, DateTime.Now);
-                clsFunctions.DeleteData(sqlite_conn, idLine);
-                refreshData();
-                Clear();
+                var response = await _service.DeleteCF(APIUrl, idLine.Value);
+                if (response.IsSuccess == true)
+                {
+                    await refreshData();
+                    Clear();
+                }
+                else
+                {
+                    MessageBox.Show("Xảy ra lỗi");
+                }
             }
             catch { }
         }
@@ -346,52 +291,13 @@ namespace ServerView
 
         private void btSetup_Click(object sender, EventArgs e)
         {
-            frmServer_Setting f = new frmServer_Setting();
+            frmSetting f = new frmSetting();
             if (f.ShowDialog() == DialogResult.OK)
                 Clear();
         }
-
-        private void btRefresh_Click(object sender, EventArgs e)
+        private async void updateDateTimer_Tick(object sender, EventArgs e)
         {
-            refreshData();
+            await refreshData();
         }
-
-        private void dgv_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        private void ckLocation2_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void groupBox5_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void groupBox1_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void groupBox2_Enter(object sender, EventArgs e)
-        {
-
-        }
-
-        private void lbLocation_Click(object sender, EventArgs e)
-        {
-
-        }
-    }
-    public class LineInfo
-    {
-        public string Line { get; set; }
-        public string CF { get; set; }
-        public string Code { get; set; }
-        public string Quantity { get; set; }
-
     }
 }

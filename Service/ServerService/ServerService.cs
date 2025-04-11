@@ -36,11 +36,12 @@ namespace Shared.Services.ServerService
             }
             catch (Exception ex) { return new ResponseDTO { IsSuccess = false, Message = ex.Message }; }
         }
-        public ResponseDTO DeleteCF(int id)
+        public async Task<ResponseDTO> DeleteCF(int id)
         {
             try
             {
-                var cf = _context.LineInfo.FirstOrDefault(s => s.Id == id);
+                var all = await _context.LineInfo.ToListAsync();
+                var cf = all.FirstOrDefault(s => s.Id == id);
                 if (cf == null)
                 {
                     return new ResponseDTO { IsSuccess = false, Message = "Không tìm thấy" };

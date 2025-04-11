@@ -1,4 +1,6 @@
-﻿using Shared.Services.Extension;
+﻿using ModelDTO;
+using Shared.Services.ClientService;
+using Shared.Services.Extension;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,14 +17,16 @@ namespace ClientView
 {
     public partial class frmClient : Form
     {
+        private readonly IClientService _service;
         public frmClient()
         {
             InitializeComponent();
+            _service = new ClientService(new HttpClient());
         }
-        string Line,APIUrl, Folder;
+        string Line, APIUrl, Folder;
         SerialPort serPort;
 
-        private void btSend_Click(object sender, EventArgs e)
+        private async void btSend_Click(object sender, EventArgs e)
         {
             try
             {
@@ -37,33 +41,40 @@ namespace ClientView
                     bSend = false;
                     dxErr.SetError(txtCODE, "Not Empty");
                 }
-                if (txtQuantity.Text == "")
+                if (txtQuantity.Text == ""||!txtQuantity.Text.IsNumber())
                 {
                     bSend = false;
-                    dxErr.SetError(txtQuantity, "Not Empty");
+                    dxErr.SetError(txtQuantity, "Incorrect format");
                 }
                 if (bSend)
                 {
-                    //Send to Server
-                    clsFunctions.SentMess("MESS/" + lbLINE.Text + "/" + txtCF.Text + "/" + txtCODE.Text + "/" + txtQuantity.Text, IPServer, 6666);
-                    //Open frmDetail
-
-                    frmClientDetail frmClientDetail = new frmClientDetail(txtCF.Text, txtCODE.Text, txtQuantity.Text, Folder);
-                    this.Hide();
-                    frmClientDetail.Closed += (s, args) => this.Close();
-                    if ("COM7".checkCOMExits())
+                    var response = await _service.SendCF(APIUrl, new RequestDTO
                     {
-                        serPort.Close();
-                    }
-                    //frmClientDetail.Show();
-                    frmClientDetail.ShowDialog();
-
-                    if (frmClientDetail.DialogResult == DialogResult.OK)
+                        Line = lbLine.Text,
+                        CF = txtCF.Text,
+                        CODE = txtCODE.Text,
+                        Quantity = txtQuantity.Text._Int()
+                    });
+                    if (response.IsSuccess)
                     {
-                        txtCF.Text = "";
-                        txtCODE.Text = "";
-                        txtQuantity.Text = "";
+                        frmClientDetail frmClientDetail = new frmClientDetail(txtCF.Text, txtCODE.Text, txtQuantity.Text, Folder);
+                        this.Hide();
+                        frmClientDetail.Closed += (s, args) => this.Close();
+                        if ("COM7".checkCOMExits())
+                        {
+                            serPort.Close();
+                        }
+                        frmClientDetail.ShowDialog();
+
+                        if (frmClientDetail.DialogResult == DialogResult.OK)
+                        {
+                            txtCF.Text = "";
+                            txtCODE.Text = "";
+                            txtQuantity.Text = "";
+                        }
                     }
+                    else
+                        MessageBox.Show(response.Message);
                 }
             }
             catch (Exception ex) { MessageBox.Show(ex.Message); }
@@ -71,11 +82,10 @@ namespace ClientView
         }
         private void frmClient_Load(object sender, EventArgs e)
         {
-            LoadInfo();
-            //Check COM exist
+            LoadInfo();           
             if ("COM7".checkCOMExits())
             {
-                serPort = new SerialPort("COM7"); // thats the USB port on which the scanner is connected
+                serPort = new SerialPort("COM7");
                 serPort.DataReceived += new SerialDataReceivedEventHandler(serial_DataReceived);
                 serPort.Open();
             }

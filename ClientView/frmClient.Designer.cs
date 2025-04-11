@@ -61,11 +61,11 @@
             // 
             lbLine.AutoSize = true;
             lbLine.Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lbLine.Location = new Point(180, 37);
+            lbLine.Location = new Point(199, 36);
             lbLine.Name = "lbLine";
-            lbLine.Size = new Size(83, 32);
+            lbLine.Size = new Size(66, 32);
             lbLine.TabIndex = 0;
-            lbLine.Text = "label1";
+            lbLine.Text = "LINE";
             // 
             // groupBox2
             // 
@@ -148,7 +148,9 @@
             Controls.Add(groupBox1);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Name = "frmClient";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "frmClient";
+            Load += frmClient_Load;
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             groupBox2.ResumeLayout(false);

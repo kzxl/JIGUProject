@@ -25,5 +25,9 @@ namespace Shared.Models
         public int Quantity { get; set; }
         public DateTime Date { get; set; }
     }
+    public class Request
+    {
+        public int Id { get; set; }
+    }
 
 }

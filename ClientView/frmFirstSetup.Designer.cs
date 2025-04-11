@@ -61,11 +61,11 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(57, 44);
+            label2.Location = new Point(48, 44);
             label2.Name = "label2";
-            label2.Size = new Size(43, 15);
+            label2.Size = new Size(52, 15);
             label2.TabIndex = 0;
-            label2.Text = "API Url";
+            label2.Text = "Server IP";
             // 
             // txtAPIUrl
             // 
