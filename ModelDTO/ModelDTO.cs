@@ -3,8 +3,9 @@
     public class RequestDTO
     {
         public string Line { get; set; }
+        public string CF { get; set; }
         public string CODE { get; set; }
-        public string Quantity { get; set; }
+        public int Quantity { get; set; }
     }
     public class ResponseDTO
     {

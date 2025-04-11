@@ -60,9 +60,10 @@
             // lbLine
             // 
             lbLine.AutoSize = true;
-            lbLine.Location = new Point(193, 52);
+            lbLine.Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lbLine.Location = new Point(180, 37);
             lbLine.Name = "lbLine";
-            lbLine.Size = new Size(38, 15);
+            lbLine.Size = new Size(83, 32);
             lbLine.TabIndex = 0;
             lbLine.Text = "label1";
             // 
