@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Shared.Services.Extension;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -44,13 +45,13 @@ namespace ClientView
                 if (bSend)
                 {
                     //Send to Server
-                    clsFunctions.SentMess("MESS/" + lbLINE.Text + "/" + txtCF.Text + "/" + txtCODE.Text + "/" + txtQuatity.Text, IPServer, 6666);
+                    clsFunctions.SentMess("MESS/" + lbLINE.Text + "/" + txtCF.Text + "/" + txtCODE.Text + "/" + txtQuantity.Text, IPServer, 6666);
                     //Open frmDetail
 
-                    frmClientDetail frmClientDetail = new frmClientDetail(txtCF.Text, txtCODE.Text, txtQuatity.Text, Folder);
+                    frmClientDetail frmClientDetail = new frmClientDetail(txtCF.Text, txtCODE.Text, txtQuantity.Text, Folder);
                     this.Hide();
                     frmClientDetail.Closed += (s, args) => this.Close();
-                    if (clsFunctions.checkCOMExits("COM7"))
+                    if ("COM7".checkCOMExits())
                     {
                         serPort.Close();
                     }
@@ -72,7 +73,7 @@ namespace ClientView
         {
             LoadInfo();
             //Check COM exist
-            if (clsFunctions.checkCOMExits("COM7"))
+            if ("COM7".checkCOMExits())
             {
                 serPort = new SerialPort("COM7"); // thats the USB port on which the scanner is connected
                 serPort.DataReceived += new SerialDataReceivedEventHandler(serial_DataReceived);

@@ -9,7 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
     <PackageReference Include="System.IO.Ports" Version="10.0.0-preview.2.25163.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Service\Shared.Services.csproj" />
   </ItemGroup>
 
 </Project>

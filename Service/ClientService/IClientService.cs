@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ModelDTO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,6 @@ namespace Shared.Services.ClientService
 {
     public interface IClientService
     {
+        ResponseDTO SendCF(RequestDTO request);
     }
 }
