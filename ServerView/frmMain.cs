@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 using ModelDTO;
 using Shared.Models;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using System.Reflection;
 
 namespace ServerView
 {
@@ -31,37 +32,77 @@ namespace ServerView
         public frmMain()
         {
             InitializeComponent();
-            
+
             _service = new ClientService(new HttpClient());
         }
 
         public static XLWorkbook workbook, workbookLogs;
-        string CFPath, LogPath, Location1, Location2, APIUrl;
+        string CFPath, LogPath, APIUrl, tempPath;
         System.Media.SoundPlayer player = new System.Media.SoundPlayer(@"notification.wav");
         private async void frmServer_Load(object sender, EventArgs e)
-        {            
-            gv.DataSource = _bs;
-            if (File.Exists("SSettings.xml"))
+        {
+            try
             {
-                string xmlFile = "SSettings.xml";
-                DataSet dsXML = new DataSet();
-                dsXML.ReadXml(xmlFile, XmlReadMode.InferSchema);
+                gv.DataSource = _bs;
+                if (File.Exists("SSettings.xml"))
+                {
+                    string xmlFile = "SSettings.xml";
+                    DataSet dsXML = new DataSet();
+                    dsXML.ReadXml(xmlFile, XmlReadMode.InferSchema);
 
-                CFPath = dsXML.Tables["GeneralInfo"].Rows[0]["CFPath"].ToString();
+                    CFPath = dsXML.Tables["GeneralInfo"].Rows[0]["CFPath"].ToString();
 
-                APIUrl = dsXML.Tables["GeneralInfo"].Rows[0]["APIUrl"].ToString();
+                    APIUrl = dsXML.Tables["GeneralInfo"].Rows[0]["APIUrl"].ToString();
+                    var exePath = Assembly.GetExecutingAssembly().Location;
+                    var tempFolder = Path.Combine(Path.GetDirectoryName(exePath), "temp");
+                    Directory.CreateDirectory(tempFolder);
+                    tempPath = Path.Combine(tempFolder, Path.GetFileName(CFPath));
+                    File.Copy(CFPath, tempPath, true);
+                    LoadDataFromCF(tempPath);
+                    LogPath = dsXML.Tables["GeneralInfo"].Rows[0]["LogPath"].ToString();
+                }
 
-                workbook = new XLWorkbook(CFPath);
-
-                LogPath = dsXML.Tables["GeneralInfo"].Rows[0]["LogPath"].ToString();
+                Clear();
+                if (!File.Exists("SSettings.xml"))
+                    lbLocation.Text = "Chưa chọn file chứa CF, vui lòng chọn ở Setting";
+                else
+                    lbLocation.Text = "";
+                btConfirm.Enabled = false;
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        List<CF> lstCF = new List<CF>();
+        private void LoadDataFromCF(string path)
+        {
+            using (var workbook = new XLWorkbook(tempPath))
+            {
+                var worksheet = workbook.Worksheet(1);
 
-            Clear();
-            if (!File.Exists("SSettings.xml"))
-                lbLocation.Text = "Chưa chọn file chứa CF, vui lòng chọn ở Setting";
-            else
-                lbLocation.Text = "";
-            btConfirm.Enabled = false;
+                int startRow = 9;
+                int lastRow = worksheet.LastRowUsed().RowNumber();
+
+                for (int rowNum = startRow; rowNum <= lastRow; rowNum++)
+                {
+                    var row = worksheet.Row(rowNum);
+
+                    CF rowData = new CF
+                    {
+                        CFName = row.Cell(1).GetValue<string>(),
+                        Code = row.Cell(2).GetValue<string>(),
+                        CodeOther = row.Cell(3).GetValue<string>(),
+                        Note = row.Cell(4).GetValue<string>(),
+                        LocationOld = row.Cell(5).GetValue<string>(),
+                        QuantityOld = row.Cell(6).GetValue<string>(),
+                        LocationNew = row.Cell(7).GetValue<string>(),
+                        QuantityNew = row.Cell(8).GetValue<string>()
+                    };
+
+                    lstCF.Add(rowData);
+                }
+            }
         }
         private List<int> _oldIds = new List<int>();
         private bool isLoading = false;
@@ -89,8 +130,8 @@ namespace ServerView
                     isLoading = true;
                     _bs.DataSource = _newData;
                     gv.ResumeLayout();
-                    
-                    _oldIds = newIds; 
+
+                    _oldIds = newIds;
 
                     if (selectedId != null)
                     {
@@ -111,7 +152,7 @@ namespace ServerView
                 }
             }
             finally
-            {                
+            {
                 isLoading = false;
             }
         }
@@ -127,70 +168,110 @@ namespace ServerView
         {
             try
             {
-                ckLocation1.Text = "Không tìm thấy vị trí";
-                ckLocation1.Enabled = false;
-                ckLocation2.Text = "Không tìm thấy vị trí";
-                ckLocation2.Enabled = false;
+                // Reset UI
+                ResetLocationUI();
                 btConfirm.Enabled = true;
                 Clear();
 
-
-                lbLine.Text = gv.Rows[e.RowIndex].Cells["LINE"].Value.ToString();
-                lbCF.Text = gv.Rows[e.RowIndex].Cells["CF"].Value.ToString();
-                lbCode.Text = gv.Rows[e.RowIndex].Cells["CODE"].Value.ToString();
-                lbQuantity.Text = gv.Rows[e.RowIndex].Cells["Quantity"].Value.ToString();
+                // Lấy dữ liệu từ dòng được chọn
+                var row = gv.Rows[e.RowIndex];
+                lbLine.Text = row.Cells["LINE"].Value?.ToString() ?? "";
+                lbCF.Text = row.Cells["CF"].Value?.ToString() ?? "";
+                lbCode.Text = row.Cells["CODE"].Value?.ToString() ?? "";
+                lbQuantity.Text = row.Cells["Quantity"].Value?.ToString() ?? "";
 
                 string code = lbCode.Text.Trim();
-                var locationParts = (CheckCFLocation(code) ?? "").Split('/');
-                var quantityParts = (CheckCFQuantity(code) ?? "").Split('/');
+                var result = GetValueFromList(code);
 
-                string loc1 = locationParts.Length > 0 ? locationParts[0] : "";
-                string loc2 = locationParts.Length > 1 ? locationParts[1] : "";
-                string qty1 = quantityParts.Length > 0 ? quantityParts[0] : "0";
-                string qty2 = quantityParts.Length > 1 ? quantityParts[1] : "0";
+                if (result == null)
+                {
+                    MessageBox.Show($"⚠️ Code \"{code}\" không có trong file!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
-                Location1 = qty1 == "0" ? "" : loc1;
-                Location2 = qty2 == "0" ? "" : loc2;
+                // Gán thông tin vị trí cũ
+                UpdateLocationUI(
+                    checkBox: ckLocation1,
+                    quantityLabel: lbQuantity1,
+                    location: result.LocationOld,
+                    quantity: result.QuantityNew._IntOrZero(),
+                    labelPrefix: "Vị trí cũ"
+                );
 
-                // UI - Vị trí 1
-                ckLocation1.Text = string.IsNullOrEmpty(Location1) ? "Vị trí cũ: (Không có)" : $"Vị trí cũ: {Location1}";
-                lbQuantity1.Text = $"Hiện có {qty1}";
-                ckLocation1.Enabled = !string.IsNullOrEmpty(Location1);
-                ckLocation1.Checked = !string.IsNullOrEmpty(Location1);
-
-                // UI - Vị trí 2
-                ckLocation2.Text = string.IsNullOrEmpty(Location2) ? "Vị trí mới: (Không có)" : $"Vị trí mới: {Location2}";
-                lbQuantity2.Text = $"Hiện có {qty2}";
-                ckLocation2.Enabled = !string.IsNullOrEmpty(Location2);
-                ckLocation2.Checked = !string.IsNullOrEmpty(Location2);
+                // Gán thông tin vị trí mới
+                UpdateLocationUI(
+                    checkBox: ckLocation2,
+                    quantityLabel: lbQuantity2,
+                    location: result.LocationNew,
+                    quantity: result.QuantityNew._IntOrZero(),
+                    labelPrefix: "Vị trí mới"
+                );
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Lỗi xử lý dòng: " + ex.Message);
             }
         }
-        string ReadValueFromExcel(string code, string col1, string col2)
+        private void ResetLocationUI()
+        {
+            ckLocation1.Text = "Không tìm thấy vị trí";
+            ckLocation1.Enabled = false;
+            ckLocation1.Checked = false;
+
+            ckLocation2.Text = "Không tìm thấy vị trí";
+            ckLocation2.Enabled = false;
+            ckLocation2.Checked = false;
+
+            lbQuantity1.Text = "";
+            lbQuantity2.Text = "";
+        }
+        private void UpdateLocationUI(CheckBox checkBox, System.Windows.Forms.Label quantityLabel, string location, int quantity, string labelPrefix)
+        {
+            bool hasLocation = !string.IsNullOrEmpty(location);
+            checkBox.Text = hasLocation ? $"{labelPrefix}: {location}" : $"{labelPrefix}: (Không có)";
+            checkBox.Enabled = hasLocation;
+            checkBox.Checked = hasLocation;
+            quantityLabel.Text = $"Hiện có {quantity}";
+        }
+
+
+
+        private CF GetValueFromList(string code)
         {
             try
             {
-                if (string.IsNullOrEmpty(CFPath)) return "";
+                if (lstCF == null) return null;
+                var result = lstCF.Where(s => s.Code == code || s.CodeOther == code).ToList();
 
-                var ws = workbook.Worksheet(1);
-                for (int row = 9; row <= ws.LastRowUsed().RowNumber(); row++)
+                if (result == null || result.Count == 0)
+                    return null;
+
+                if (result.Count == 1)
                 {
-                    if (code == ws.Cell("B" + row).GetString().Trim())
+                    return result.First();
+                }
+                else
+                {
+                    var totalQuantityOld = result.Sum(r => r.QuantityOld._IntOrZero());
+                    var totalQuantityNew = result.Sum(r => r.QuantityNew._IntOrZero());
+                    var locationOld = result.First().LocationOld;
+                    var locationNew = result.First().LocationNew;
+
+                    return new CF
                     {
-                        return ws.Cell(col1 + row).GetString() + "/" + ws.Cell(col2 + row).GetString();
-                    }
+                        Code = code,
+                        QuantityOld = totalQuantityOld.ToString(),
+                        QuantityNew = totalQuantityNew.ToString(),
+                        LocationOld = locationOld,
+                        LocationNew = locationNew
+                    };
                 }
             }
-            catch { }
-
-            return "";
+            catch
+            {
+                return null;
+            }
         }
-
-        string CheckCFLocation(string code) => ReadValueFromExcel(code, "E", "G");
-        string CheckCFQuantity(string code) => ReadValueFromExcel(code, "F", "H");
 
         void Clear()
         {
@@ -221,14 +302,13 @@ namespace ServerView
                     MessageBox.Show("Cần chọn vị trí để lưu");
                     return;
                 }
-                if (ckLocation1.Checked == true && ckLocation2.Checked == false)
-                    Location2 = "";
-                else
-                if (ckLocation2.Checked == true && ckLocation1.Checked == false)
-                    Location1 = "";
-                else
-                { }
-                SaveLogs(lbLine.Text, lbCF.Text, lbCode.Text, lbQuantity.Text, Location1, Location2, DateTime.Now);
+                //if (ckLocation1.Checked == true && ckLocation2.Checked == false)
+                //    Location2 = "";
+                //else
+                //if (ckLocation2.Checked == true && ckLocation1.Checked == false)
+                //    Location1 = "";
+
+                SaveLogs(lbLine.Text, lbCF.Text, lbCode.Text, lbQuantity.Text, ckLocation1.Text, ckLocation2.Text, DateTime.Now);
                 var response = await _service.DeleteCF(APIUrl, idLine.Value);
                 if (response.IsSuccess == true)
                 {
