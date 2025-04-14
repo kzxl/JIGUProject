@@ -41,7 +41,7 @@ namespace ClientView
                     bSend = false;
                     dxErr.SetError(txtCODE, "Not Empty");
                 }
-                if (txtQuantity.Text == ""||!txtQuantity.Text.IsNumber())
+                if (txtQuantity.Text == "" || !txtQuantity.Text.IsNumber())
                 {
                     bSend = false;
                     dxErr.SetError(txtQuantity, "Incorrect format");
@@ -57,7 +57,7 @@ namespace ClientView
                     });
                     if (response.IsSuccess)
                     {
-                        frmClientDetail frmClientDetail = new frmClientDetail(txtCF.Text, txtCODE.Text, txtQuantity.Text, Folder);
+                        frmClientDetail frmClientDetail = new frmClientDetail(lbLine.Text, txtCF.Text, txtCODE.Text, txtQuantity.Text, Folder);
                         this.Hide();
                         frmClientDetail.Closed += (s, args) => this.Close();
                         if ("COM7".checkCOMExits())
@@ -82,7 +82,7 @@ namespace ClientView
         }
         private void frmClient_Load(object sender, EventArgs e)
         {
-            LoadInfo();           
+            LoadInfo();
             if ("COM7".checkCOMExits())
             {
                 serPort = new SerialPort("COM7");

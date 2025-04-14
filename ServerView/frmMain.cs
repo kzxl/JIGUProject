@@ -228,7 +228,8 @@ namespace ServerView
         private void UpdateLocationUI(CheckBox checkBox, System.Windows.Forms.Label quantityLabel, string location, int quantity, string labelPrefix)
         {
             bool hasLocation = !string.IsNullOrEmpty(location);
-            checkBox.Text = hasLocation ? $"{labelPrefix}: {location}" : $"{labelPrefix}: (Không có)";
+            bool hasQuantity = quantity > 0;
+            checkBox.Text = hasLocation && hasQuantity ? $"{labelPrefix}: {location}" : $"{labelPrefix}: (Không có)";
             checkBox.Enabled = hasLocation;
             checkBox.Checked = hasLocation;
             quantityLabel.Text = $"Hiện có {quantity}";
@@ -302,13 +303,9 @@ namespace ServerView
                     MessageBox.Show("Cần chọn vị trí để lưu");
                     return;
                 }
-                //if (ckLocation1.Checked == true && ckLocation2.Checked == false)
-                //    Location2 = "";
-                //else
-                //if (ckLocation2.Checked == true && ckLocation1.Checked == false)
-                //    Location1 = "";
-
-                SaveLogs(lbLine.Text, lbCF.Text, lbCode.Text, lbQuantity.Text, ckLocation1.Text, ckLocation2.Text, DateTime.Now);
+                var location1 = ckLocation1.Checked ? ckLocation1.Text : "";
+                var location2 = ckLocation2.Checked ? ckLocation2.Text : "";
+                SaveLogs(lbLine.Text, lbCF.Text, lbCode.Text, lbQuantity.Text, location1, location2, DateTime.Now);
                 var response = await _service.DeleteCF(APIUrl, idLine.Value);
                 if (response.IsSuccess == true)
                 {

@@ -45,12 +45,14 @@
             label7 = new Label();
             btConfirm = new Button();
             dxErr = new ErrorProvider(components);
+            txtLine = new TextBox();
+            label8 = new Label();
             ((System.ComponentModel.ISupportInitialize)dxErr).BeginInit();
             SuspendLayout();
             // 
             // txtCF
             // 
-            txtCF.Location = new Point(95, 12);
+            txtCF.Location = new Point(95, 41);
             txtCF.Name = "txtCF";
             txtCF.Size = new Size(338, 23);
             txtCF.TabIndex = 0;
@@ -58,15 +60,15 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(47, 15);
+            label1.Location = new Point(47, 44);
             label1.Name = "label1";
-            label1.Size = new Size(43, 15);
+            label1.Size = new Size(42, 15);
             label1.TabIndex = 1;
             label1.Text = "Tên CF";
             // 
             // txtCODE
             // 
-            txtCODE.Location = new Point(95, 41);
+            txtCODE.Location = new Point(95, 70);
             txtCODE.Name = "txtCODE";
             txtCODE.Size = new Size(338, 23);
             txtCODE.TabIndex = 0;
@@ -74,7 +76,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(51, 44);
+            label2.Location = new Point(51, 73);
             label2.Name = "label2";
             label2.Size = new Size(38, 15);
             label2.TabIndex = 1;
@@ -82,7 +84,7 @@
             // 
             // txtQuantity
             // 
-            txtQuantity.Location = new Point(95, 70);
+            txtQuantity.Location = new Point(95, 99);
             txtQuantity.Name = "txtQuantity";
             txtQuantity.Size = new Size(338, 23);
             txtQuantity.TabIndex = 0;
@@ -90,7 +92,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(32, 73);
+            label3.Location = new Point(32, 102);
             label3.Name = "label3";
             label3.Size = new Size(57, 15);
             label3.TabIndex = 1;
@@ -98,7 +100,7 @@
             // 
             // txtContent
             // 
-            txtContent.Location = new Point(95, 99);
+            txtContent.Location = new Point(95, 128);
             txtContent.Name = "txtContent";
             txtContent.Size = new Size(338, 23);
             txtContent.TabIndex = 0;
@@ -106,7 +108,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(31, 102);
+            label4.Location = new Point(31, 131);
             label4.Name = "label4";
             label4.Size = new Size(58, 15);
             label4.TabIndex = 1;
@@ -114,7 +116,7 @@
             // 
             // txtReason
             // 
-            txtReason.Location = new Point(95, 128);
+            txtReason.Location = new Point(95, 157);
             txtReason.Name = "txtReason";
             txtReason.Size = new Size(338, 23);
             txtReason.TabIndex = 0;
@@ -122,7 +124,7 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(8, 131);
+            label5.Location = new Point(8, 160);
             label5.Name = "label5";
             label5.Size = new Size(81, 15);
             label5.TabIndex = 1;
@@ -130,7 +132,7 @@
             // 
             // txtFullname
             // 
-            txtFullname.Location = new Point(95, 157);
+            txtFullname.Location = new Point(95, 186);
             txtFullname.Name = "txtFullname";
             txtFullname.Size = new Size(338, 23);
             txtFullname.TabIndex = 0;
@@ -138,15 +140,15 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(3, 160);
+            label6.Location = new Point(3, 189);
             label6.Name = "label6";
-            label6.Size = new Size(87, 15);
+            label6.Size = new Size(86, 15);
             label6.TabIndex = 1;
             label6.Text = "Tên  Nhân Viên";
             // 
             // txtUsername
             // 
-            txtUsername.Location = new Point(95, 186);
+            txtUsername.Location = new Point(95, 215);
             txtUsername.Name = "txtUsername";
             txtUsername.Size = new Size(338, 23);
             txtUsername.TabIndex = 0;
@@ -154,7 +156,7 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(7, 189);
+            label7.Location = new Point(7, 218);
             label7.Name = "label7";
             label7.Size = new Size(82, 15);
             label7.TabIndex = 1;
@@ -162,7 +164,7 @@
             // 
             // btConfirm
             // 
-            btConfirm.Location = new Point(150, 215);
+            btConfirm.Location = new Point(151, 244);
             btConfirm.Name = "btConfirm";
             btConfirm.Size = new Size(201, 23);
             btConfirm.TabIndex = 2;
@@ -174,11 +176,27 @@
             // 
             dxErr.ContainerControl = this;
             // 
+            // txtLine
+            // 
+            txtLine.Location = new Point(95, 12);
+            txtLine.Name = "txtLine";
+            txtLine.Size = new Size(338, 23);
+            txtLine.TabIndex = 0;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(60, 15);
+            label8.Name = "label8";
+            label8.Size = new Size(29, 15);
+            label8.TabIndex = 1;
+            label8.Text = "Line";
+            // 
             // frmClientDetail
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(445, 252);
+            ClientSize = new Size(445, 279);
             Controls.Add(btConfirm);
             Controls.Add(label7);
             Controls.Add(label6);
@@ -186,6 +204,7 @@
             Controls.Add(label4);
             Controls.Add(label3);
             Controls.Add(label2);
+            Controls.Add(label8);
             Controls.Add(label1);
             Controls.Add(txtUsername);
             Controls.Add(txtFullname);
@@ -193,6 +212,7 @@
             Controls.Add(txtContent);
             Controls.Add(txtQuantity);
             Controls.Add(txtCODE);
+            Controls.Add(txtLine);
             Controls.Add(txtCF);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Name = "frmClientDetail";
@@ -224,5 +244,7 @@
         private Label label7;
         private Button btConfirm;
         private ErrorProvider dxErr;
+        private Label label8;
+        private TextBox txtLine;
     }
 }
