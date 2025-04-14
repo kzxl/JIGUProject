@@ -194,7 +194,7 @@ namespace ServerView
                     checkBox: ckLocation1,
                     quantityLabel: lbQuantity1,
                     location: result.LocationOld,
-                    quantity: result.QuantityNew._IntOrZero(),
+                    quantity: result.QuantityOld._IntOrZero(),
                     labelPrefix: "Vị trí cũ"
                 );
 
