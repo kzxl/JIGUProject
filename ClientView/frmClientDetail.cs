@@ -16,16 +16,15 @@ namespace ClientView
 {
     public partial class frmClientDetail : Form
     {
-        public frmClientDetail(string line, string CF, string CODE, string Quatity, string Folder)
+        public frmClientDetail( string CF, string CODE, string Quatity, string Folder)
         {
-            InitializeComponent();
-            _line = line;
+            InitializeComponent();            
             _CF = CF;
             _CODE = CODE;
             _Quatity = Quatity;
             _Folder = Folder;
         }
-        string _CF, _CODE, _Quatity, _Folder, _line;
+        string _CF, _CODE, _Quatity, _Folder;
         public static XLWorkbook workbook;
         private void btConfirm_Click(object sender, EventArgs e)
         {
@@ -84,8 +83,7 @@ namespace ClientView
 
 
         private void frmClientDetail_Load(object sender, EventArgs e)
-        {
-            txtLine.Text = _line;
+        {            
             txtCF.Text = _CF;
             txtCODE.Text = _CODE;
             txtQuantity.Text = _Quatity;

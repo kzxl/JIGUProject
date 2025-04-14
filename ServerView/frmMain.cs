@@ -231,7 +231,7 @@ namespace ServerView
             bool hasQuantity = quantity > 0;
             checkBox.Text = hasLocation && hasQuantity ? $"{labelPrefix}: {location}" : $"{labelPrefix}: (Không có)";
             checkBox.Enabled = hasLocation;
-            checkBox.Checked = hasLocation;
+            checkBox.Checked = false;
             quantityLabel.Text = $"Hiện có {quantity}";
         }
 
@@ -351,8 +351,8 @@ namespace ServerView
                     ws.Cell("B" + newRow).Value = CF;
                     ws.Cell("C" + newRow).Value = Code;
                     ws.Cell("D" + newRow).Value = Quantity;
-                    ws.Cell("E" + newRow).Value = string.IsNullOrEmpty(Location1) ? "(Không có)" : Location1;
-                    ws.Cell("F" + newRow).Value = string.IsNullOrEmpty(Location2) ? "(Không có)" : Location2;
+                    ws.Cell("E" + newRow).Value = string.IsNullOrEmpty(Location1) ? "" : Location1.Split(':')[1].Trim();
+                    ws.Cell("F" + newRow).Value = string.IsNullOrEmpty(Location2) ? "" : Location2.Split(':')[1].Trim();
                     ws.Cell("G" + newRow).Value = Confirm.ToString("dd/MM/yyyy");
                     ws.Cell("H" + newRow).Value = Confirm.ToString("HH:mm:ss");
 

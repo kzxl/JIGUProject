@@ -23,7 +23,7 @@ namespace ClientView
             InitializeComponent();
             _service = new ClientService(new HttpClient());
         }
-        string Line, APIUrl, Folder;
+        string Line, APIUrl, Folder, COMPort = "COM7";
         SerialPort serPort;
 
         private async void btSend_Click(object sender, EventArgs e)
@@ -57,10 +57,10 @@ namespace ClientView
                     });
                     if (response.IsSuccess)
                     {
-                        frmClientDetail frmClientDetail = new frmClientDetail(lbLine.Text, txtCF.Text, txtCODE.Text, txtQuantity.Text, Folder);
+                        frmClientDetail frmClientDetail = new frmClientDetail( txtCF.Text, txtCODE.Text, txtQuantity.Text, Folder);
                         this.Hide();
                         frmClientDetail.Closed += (s, args) => this.Close();
-                        if ("COM7".checkCOMExits())
+                        if (COMPort.checkCOMExits())
                         {
                             serPort.Close();
                         }
@@ -83,9 +83,9 @@ namespace ClientView
         private void frmClient_Load(object sender, EventArgs e)
         {
             LoadInfo();
-            if ("COM7".checkCOMExits())
+            if (COMPort.checkCOMExits())
             {
-                serPort = new SerialPort("COM7");
+                serPort = new SerialPort(COMPort);
                 serPort.DataReceived += new SerialDataReceivedEventHandler(serial_DataReceived);
                 serPort.Open();
             }
